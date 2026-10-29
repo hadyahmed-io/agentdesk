@@ -1,0 +1,139 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "AgentDesk Local-First REST API",
+    "version": "1.0.0",
+    "description": "REST API for managing software projects, coding tasks, agent providers, execution runs, and structured logs in AgentDesk."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:3001",
+      "description": "Local SQLite-backed Express Server"
+    }
+  ],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "summary": "Health and execution mode summary",
+        "responses": {
+          "200": { "description": "Service health status and verified provider counts" }
+        }
+      }
+    },
+    "/api/metrics": {
+      "get": {
+        "summary": "Workspace summary metrics",
+        "parameters": [
+          { "name": "projectId", "in": "query", "schema": { "type": "string" } },
+          { "name": "providerId", "in": "query", "schema": { "type": "string" } },
+          { "name": "days", "in": "query", "schema": { "type": "integer", "minimum": 1, "maximum": 365 } }
+        ],
+        "responses": {
+          "200": { "description": "Database-derived workspace metrics including success rate" }
+        }
+      }
+    },
+    "/api/search": {
+      "get": {
+        "summary": "Global search across projects, tasks, and agent runs",
+        "parameters": [
+          { "name": "q", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Matching projects, tasks, and runs" }
+        }
+      }
+    },
+    "/api/seed": {
+      "post": {
+        "summary": "Idempotently seed optional demonstration dataset",
+        "responses": {
+          "200": { "description": "Demonstration dataset already present" },
+          "201": { "description": "Demonstration dataset created" }
+        }
+      }
+    },
+    "/api/projects": {
+      "get": {
+        "summary": "List projects with search, tag/archive filter, sort, and pagination",
+        "parameters": [
+          { "name": "search", "in": "query", "schema": { "type": "string" } },
+          { "name": "archived", "in": "query", "schema": { "type": "string", "enum": ["true", "false", "all"] } },
+          { "name": "tag", "in": "query", "schema": { "type": "string" } },
+          { "name": "sortBy", "in": "query", "schema": { "type": "string", "enum": ["name", "createdAt", "updatedAt"] } },
+          { "name": "sortOrder", "in": "query", "schema": { "type": "string", "enum": ["asc", "desc"] } },
+          { "name": "page", "in": "query", "schema": { "type": "integer" } },
+          { "name": "limit", "in": "query", "schema": { "type": "integer" } }
+        ],
+        "responses": { "200": { "description": "Paginated project list" } }
+      },
+      "post": {
+        "summary": "Create a new project",
+        "responses": {
+          "201": { "description": "Created project" },
+          "400": { "description": "Validation error" }
+        }
+      }
+    },
+    "/api/projects/{projectId}": {
+      "get": { "summary": "Get project by ID", "responses": { "200": { "description": "Project record" }, "404": { "description": "Not found" } } },
+      "patch": { "summary": "Update project metadata or archive state", "responses": { "200": { "description": "Updated project" } } },
+      "delete": { "summary": "Permanently delete project and cascade tasks/runs", "responses": { "200": { "description": "Deletion summary" } } }
+    },
+    "/api/tasks": {
+      "get": { "summary": "List tasks with search, project/status/priority filters, and sorting", "responses": { "200": { "description": "Paginated tasks" } } },
+      "post": { "summary": "Create a new task", "responses": { "201": { "description": "Created task" }, "400": { "description": "Validation error" } } }
+    },
+    "/api/tasks/{taskId}": {
+      "get": { "summary": "Get task by ID", "responses": { "200": { "description": "Task record" }, "404": { "description": "Not found" } } },
+      "patch": { "summary": "Update task fields, status, or priority", "responses": { "200": { "description": "Updated task" } } },
+      "delete": { "summary": "Delete task", "responses": { "200": { "description": "Deleted" } } }
+    },
+    "/api/providers": {
+      "get": { "summary": "List registered agent providers", "responses": { "200": { "description": "Providers list (secrets redacted)" } } },
+      "post": { "summary": "Register provider", "responses": { "201": { "description": "Created provider" } } }
+    },
+    "/api/providers/{providerId}": {
+      "get": { "summary": "Get provider details", "responses": { "200": { "description": "Provider record" } } },
+      "patch": { "summary": "Update provider configuration or enabled status", "responses": { "200": { "description": "Updated provider" } } }
+    },
+    "/api/providers/{providerId}/test": {
+      "post": { "summary": "Verify provider runtime configuration and binary availability", "responses": { "200": { "description": "Verification result" } } }
+    },
+    "/api/runs": {
+      "get": { "summary": "List agent runs with filters and pagination", "responses": { "200": { "description": "Paginated runs" } } },
+      "post": { "summary": "Start a new simulated demo or local CLI agent run", "responses": { "201": { "description": "Created run in queued/starting state" } } }
+    },
+    "/api/runs/{runId}": {
+      "get": { "summary": "Get run details", "responses": { "200": { "description": "AgentRun record" } } }
+    },
+    "/api/runs/{runId}/cancel": {
+      "post": { "summary": "Cancel an active agent run", "responses": { "200": { "description": "Cancelled run" }, "409": { "description": "Run already in terminal state" } } }
+    },
+    "/api/runs/{runId}/retry": {
+      "post": { "summary": "Create a new retry run linked to the same task without overwriting history", "responses": { "201": { "description": "Newly created retry run" } } }
+    },
+    "/api/runs/{runId}/logs": {
+      "get": { "summary": "List structured events/logs for a run with level and search filters", "responses": { "200": { "description": "Paginated run logs" } } }
+    },
+    "/api/runs/{runId}/export": {
+      "get": { "summary": "Export run metadata and logs as JSON or plain text", "responses": { "200": { "description": "Export payload" } } }
+    },
+    "/api/runs/{runId}/events": {
+      "get": { "summary": "Server-Sent Events stream for real-time run status and log updates", "responses": { "200": { "description": "text/event-stream" } } }
+    },
+    "/api/settings": {
+      "get": { "summary": "Get persistent settings and workspace path status", "responses": { "200": { "description": "Settings object" } } },
+      "patch": { "summary": "Update persistent settings", "responses": { "200": { "description": "Updated settings" } } }
+    },
+    "/api/settings/validate-workspace": {
+      "post": { "summary": "Validate a candidate directory path against approvedWorkspaceRoot", "responses": { "200": { "description": "WorkspaceValidationResult" } } }
+    },
+    "/api/settings/export": {
+      "get": { "summary": "Export safe non-secret workspace metadata", "responses": { "200": { "description": "JSON metadata export" } } }
+    },
+    "/api/activity": {
+      "get": { "summary": "List recent persistent workspace activity events", "responses": { "200": { "description": "ActivityEvent list" } } }
+    }
+  }
+}
