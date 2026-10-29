@@ -1,0 +1,80 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html.light {
+    color-scheme: light;
+  }
+
+  /* Light mode overrides for dark-first utility classes */
+  html.light body {
+    background-color: #f8fafc;
+    color: #0f172a;
+  }
+
+  html.light .bg-zinc-950 {
+    background-color: #f8fafc;
+  }
+
+  html.light .bg-zinc-900,
+  html.light .bg-zinc-900\/90,
+  html.light .bg-zinc-900\/80,
+  html.light .bg-zinc-900\/60,
+  html.light .bg-zinc-900\/50,
+  html.light .bg-zinc-900\/40 {
+    background-color: #ffffff;
+  }
+
+  html.light .bg-zinc-800,
+  html.light .bg-zinc-800\/80,
+  html.light .bg-zinc-800\/60,
+  html.light .bg-zinc-800\/50 {
+    background-color: #f1f5f9;
+  }
+
+  html.light .border-zinc-800,
+  html.light .border-zinc-800\/80,
+  html.light .border-zinc-800\/60,
+  html.light .border-zinc-700 {
+    border-color: #e2e8f0;
+  }
+
+  html.light .text-zinc-100,
+  html.light .text-zinc-200 {
+    color: #0f172a;
+  }
+
+  html.light .text-zinc-300 {
+    color: #1e293b;
+  }
+
+  html.light .text-zinc-400 {
+    color: #475569;
+  }
+
+  html.light .text-zinc-500 {
+    color: #64748b;
+  }
+}
+
+/* Custom subtle scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(113, 113, 122, 0.35);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(113, 113, 122, 0.55);
+}
